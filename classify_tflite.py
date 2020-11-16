@@ -54,9 +54,10 @@ def main():
         output_details = interpreter.get_output_details()
         input_shape = input_details[0]['shape']
         
-        for itr, x in enumerate(os.listdir(args.captcha_dir)[:10]):
+        for itr, x in enumerate(os.listdir(args.captcha_dir)):
             raw_data = cv2.imread(os.path.join(args.captcha_dir, x))
             greyscale_data = cv2.cvtColor(raw_data, cv2.COLOR_BGR2GRAY)
+            greyscale_data = cv2.adaptiveThreshold(greyscale_data,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY,11,2)
             greyscale_data = np.array(greyscale_data, dtype=np.float32)
             image = np.array(greyscale_data) / 255.0
             (h, w) = image.shape

@@ -95,10 +95,13 @@ class ImageSequence(keras.utils.Sequence):
                 
         return X, y
     
-class PushToPi(keras.callbacks.Callback):
+class PushToGithub(keras.callbacks.Callback):
     def on_train_end(self, logs=None):
-        os.system("scp project2.h5 berry:~/Documents/project2")
-        print("Pushed project2.h5 to Pi")
+        print("Pushing project2.h5 to GitHub")
+        os.system("git add project2.h5")
+        os.system("git commit -m \"Updated Model\"")
+        os.system("git push")
+        print("Finished pushing project2.h5 to GitHub")
     
 def main():
     parser = argparse.ArgumentParser()
@@ -195,7 +198,7 @@ def main():
         callbacks = [# keras.callbacks.EarlyStopping(patience=3),
                      # keras.callbacks.CSVLogger('log.csv'),
                      keras.callbacks.ModelCheckpoint(args.output_model_name+'.h5', save_best_only=False),
-                     PushToPi()]
+                     PushToGithub()]
 
         # Save the model architecture to JSON
         with open(args.output_model_name+".json", "w") as json_file:
