@@ -54,7 +54,7 @@ def main():
         output_details = interpreter.get_output_details()
         input_shape = input_details[0]['shape']
         
-        for itr, x in enumerate(os.listdir(args.captcha_dir)):
+        for itr, x in enumerate(os.listdir(args.captcha_dir))[:10]:
             raw_data = cv2.imread(os.path.join(args.captcha_dir, x))
             greyscale_data = cv2.cvtColor(raw_data, cv2.COLOR_BGR2GRAY)
             greyscale_data = np.array(greyscale_data, dtype=np.float32)
@@ -74,9 +74,7 @@ def main():
             print(str(itr) + ': Classified ' + x + ' as ' + prediction + " ")
             
     print("Pushing " + args.output + " to GitHub")
-    os.system("git add " + args.output)
-    os.system("git commit -m \"Updated Predictions\"")
-    os.system("ssh macneill 'cd ~/Documents/Project2; git push'")
+    os.system("ssh macneill 'cd ~/Documents/Project2; git add; git commit -m \"Updated Predictions\"; git push'")
     print("Finished pushing " + args.output + " to GitHub")
 
 
