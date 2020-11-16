@@ -76,7 +76,7 @@ def main():
     print("Pushing " + args.output + " to GitHub")
     os.system("git add " + args.output)
     os.system("git commit -m \"Updated Predictions\"")
-    os.system("git push")
+    os.system("ssh macneill 'cd ~/Documents/Project2; git push'")
     print("Finished pushing " + args.output + " to GitHub")
 
 
