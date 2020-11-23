@@ -20,7 +20,7 @@ def create_model(captcha_length, captcha_num_symbols, input_shape, model_depth=5
     x = input_tensor
     for i, module_length in enumerate([module_size] * model_depth):
         for j in range(module_length):
-            x = keras.layers.Conv2D(32*2**min(i, 3), kernel_size=(3,3), padding='same', kernal_initializer=keras.initializers.he_uniform(seed=None))(x)
+            x = keras.layers.Conv2D(32*2**min(i, 3), kernel_size=(3,3), padding='same', kernel_initializer=keras.initializers.he_uniform(seed=None))(x)
             x = keras.layers.BatchNormalization()(x)
             x = keras.layers.Activation('relu')(x)
         x = keras.layers.MaxPooling2D(2)(x)

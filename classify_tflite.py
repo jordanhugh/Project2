@@ -60,7 +60,7 @@ def main():
             processed_data = cv2.adaptiveThreshold(greyscale_data, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
             processed_data = np.array(processed_data, dtype=np.float32)
             processed_data = np.array(processed_data) / 255.0
-            (h, w) = procssed_data.shape
+            (h, w) = processed_data.shape
             input_data = processed_data.reshape([-1, h, w, 1])
             
             interpreter.set_tensor(input_details[0]['index'], input_data)
