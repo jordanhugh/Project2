@@ -61,7 +61,7 @@ def main():
     for x in os.listdir(args.validate_dataset):
         raw_data = cv2.imread(os.path.join(args.validate_dataset, x))
         greyscale_data = cv2.cvtColor(raw_data, cv2.COLOR_BGR2GRAY)
-        processed_data = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+        processed_data = cv2.adaptiveThreshold(greyscale_data, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
         processed_data = np.array(processed_data) / 255.0
         (c, h) = processed_data.shape
         processed_data = processed_data.reshape([-1, c, h, 1])
