@@ -52,10 +52,10 @@ def main():
     
     if args.weights is None:
         weights = np.full(len(captcha_symbols), 1)
-        characters = "!\"#$%&()*+,-:<=>?@[\]^~"
-        for character in characters:
-            index = captcha_symbols.find(character)
-            weights[index] = 4
+#         characters = "!\"#$%&()*+,/-:<=>?@[\]^|~"
+#         for character in characters:
+#             index = captcha_symbols.find(character)
+#             weights[index] = 2
     else:
         with open(args.weights, 'r') as csvfile:
             reader = csv.reader(csvfile, quoting=csv.QUOTE_NONNUMERIC)

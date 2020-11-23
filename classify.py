@@ -11,8 +11,8 @@ import string
 import random
 import csv
 import argparse
-import tflite_runtime.interpreter as tflite
 import tensorflow as tf
+import tensorflow.keras as keras
 
 def decode(characters, y):
     y = np.argmax(np.array(y), axis=2)[:,0]
@@ -50,18 +50,16 @@ def main():
     with open(args.output, 'w') as output_file:
         writer = csv.writer(output_file)
 
-        model = tf.keras.models.load_model(args.model_name + '.h5')
+        model = keras.models.load_model(args.model_name + '.h5')
         
         for itr, x in enumerate(os.listdir(args.captcha_dir)):
             raw_data = cv2.imread(os.path.join(args.captcha_dir, x))
             greyscale_data = cv2.cvtColor(raw_data, cv2.COLOR_BGR2GRAY)
-            greyscale_data = cv2.adaptiveThreshold(greyscale_data,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY,11,2)
-            greyscale_data = np.array(greyscale_data, dtype=np.float32)
-            image = np.array(greyscale_data) / 255.0
-            (h, w) = image.shape
-            input_data = image.reshape([-1, h, w, 1])
-            
-            prediction = decode(captcha_symbols, model.predict(input_data))
+            processed_data = cv2.adaptiveThreshold(greyscale_data, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+            processed_data = np.array(processed_data) / 255.0
+            (h, w) = processed_data.shape
+            processed_data = processed_data.reshape([-1, h, w, 1])
+            prediction = decode(captcha_symbols, model.predict(processed_data))
             prediction = prediction.replace(' ', '')
             writer.writerow([x, prediction])
             print(str(itr) + ': Classified ' + x + ' as ' + prediction + " ")

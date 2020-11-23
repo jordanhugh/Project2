@@ -5,42 +5,29 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 import os
-os.environ["KERAS_BACKEND"] = "plaidml.keras.backend"
 import cv2
 import numpy as np
 import string
 import random
 import argparse
-import keras
 import matplotlib.pyplot as plt
+import tensorflow as tf
+import tensorflow.keras as keras
 
 # Build a Keras model given some parameters
-def create_model(captcha_length, captcha_num_symbols, input_shape, model_depth=6, module_size=1):
+def create_model(captcha_length, captcha_num_symbols, input_shape, model_depth=5, module_size=2):
     input_tensor = keras.Input(input_shape)
-    x = keras.layers.Conv2D(32, kernel_size=(5,5), padding='same', activation='relu')(input_tensor)
-    x = keras.layers.MaxPooling2D((2,2))(x)
-    x = keras.layers.Conv2D(48, kernel_size=(5,5), padding='same', activation='relu')(x)
-    x = keras.layers.MaxPooling2D((2,2))(x)
-    x = keras.layers.Conv2D(64, kernel_size=(5,5), padding='same', activation='relu')(x)
-    x = keras.layers.MaxPooling2D((2,2))(x)
+    x = input_tensor
+    for i, module_length in enumerate([module_size] * model_depth):
+        for j in range(module_length):
+            x = keras.layers.Conv2D(32*2**min(i, 3), kernel_size=(3,3), padding='same', kernal_initializer=keras.initializers.he_uniform(seed=None))(x)
+            x = keras.layers.BatchNormalization()(x)
+            x = keras.layers.Activation('relu')(x)
+        x = keras.layers.MaxPooling2D(2)(x)
     x = keras.layers.Flatten()(x)
-    x = keras.layers.Dense(512, activation='relu')(x)
-    x = keras.layers.Dropout(0.3)(x)
     x = [keras.layers.Dense(captcha_num_symbols, activation='softmax', name='char_%d'%(i+1))(x) for i in range(captcha_length)]
     model = keras.Model(inputs=input_tensor, outputs=x)
     return model
-
-#     input_tensor = keras.Input(input_shape)
-#     x = input_tensor
-#     for i, module_length in enumerate([module_size] * model_depth):
-#         for j in range(module_length):
-#             x = keras.layers.Conv2D(32 + int(i/2) * 32, kernel_size=(5,5), padding='same', activation='relu')(x)
-#             x = keras.layers.BatchNormalization()(x)
-#         x = keras.layers.MaxPooling2D(2)(x)
-#     x = keras.layers.Flatten()(x)
-#     x = [keras.layers.Dense(captcha_num_symbols, activation='softmax', name='char_%d'%(i+1))(x) for i in range(captcha_length)]
-#     model = keras.Model(inputs=input_tensor, outputs=x)
-#     return model
 
 # A Sequence represents a dataset for training in Keras
 # In this case, we have a folder full of images
@@ -80,7 +67,8 @@ class ImageSequence(keras.utils.Sequence):
             # Keras so we divide by 255 since the image is 8-bit RGB
             raw_data = cv2.imread(os.path.join(self.directory_name, random_image_file))
             greyscale_data = cv2.cvtColor(raw_data, cv2.COLOR_BGR2GRAY)
-            processed_data = np.array(greyscale_data) / 255.0
+            processed_data = cv2.adaptiveThreshold(greyscale_data, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+            processed_data = np.array(processed_data) / 255.0
             processed_data = processed_data.reshape(self.captcha_height, self.captcha_width, 1)
             X[i] = processed_data
 
@@ -99,6 +87,7 @@ class PushToGithub(keras.callbacks.Callback):
     def on_train_end(self, logs=None):
         print("Pushing project2.h5 to GitHub")
         os.system("git add project2.h5")
+        os.system("git add log.csv")
         os.system("git commit -m \"Updated Model\"")
         os.system("git push")
         print("Finished pushing project2.h5 to GitHub")
@@ -195,8 +184,8 @@ def main():
         training_data = ImageSequence(args.train_dataset, args.batch_size, args.length, captcha_symbols, args.width, args.height)
         validation_data = ImageSequence(args.validate_dataset, args.batch_size, args.length, captcha_symbols, args.width, args.height)
 
-        callbacks = [# keras.callbacks.EarlyStopping(patience=3),
-                     # keras.callbacks.CSVLogger('log.csv'),
+        callbacks = [keras.callbacks.EarlyStopping(patience=3),
+                     keras.callbacks.CSVLogger('log.csv'),
                      keras.callbacks.ModelCheckpoint(args.output_model_name+'.h5', save_best_only=False),
                      PushToGithub()]
 

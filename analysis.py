@@ -5,16 +5,14 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 import os
-os.environ["KERAS_BACKEND"] = "plaidml.keras.backend"
-
 import cv2
 import numpy as np
 import string
 import random
 import argparse
 import csv
-import keras
 import matplotlib.pyplot as plt
+import tensorflow.keras as keras
 from sklearn.preprocessing import normalize
 
 def decode(characters, y):
@@ -61,15 +59,15 @@ def main():
     occurrences = np.zeros(255)
     misclassified = np.zeros(255)
     for x in os.listdir(args.validate_dataset):
-        img = cv2.imread(os.path.join(args.validate_dataset, x))
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        img = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY,11,2)
-        img = np.array(img) / 255.0
-        (c, h) = img.shape
-        img = img.reshape([-1, c, h, 1])
+        raw_data = cv2.imread(os.path.join(args.validate_dataset, x))
+        greyscale_data = cv2.cvtColor(raw_data, cv2.COLOR_BGR2GRAY)
+        processed_data = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+        processed_data = np.array(processed_data) / 255.0
+        (c, h) = processed_data.shape
+        processed_data = processed_data.reshape([-1, c, h, 1])
         
         true = x.split('.')[0]
-        pred = decode(captcha_symbols, model.predict(img))
+        pred = decode(captcha_symbols, model.predict(processed_data))
         for i in range(len(true)): 
             occurrences[ord(true[i])] += 1
         if pred not in true:
